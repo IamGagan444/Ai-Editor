@@ -103,7 +103,7 @@ export default function ImageEditor() {
     setIsErasing(false)
   }
 
-  const erase = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const erase = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isErasing || !contextRef.current || !canvasRef.current) return
 
     const canvas = canvasRef.current
@@ -111,8 +111,17 @@ export default function ImageEditor() {
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
 
-    const x = (event.clientX - rect.left) * scaleX
-    const y = (event.clientY - rect.top) * scaleY
+    let x, y
+
+    if ('touches' in event) {
+      // Touch event
+      x = (event.touches[0].clientX - rect.left) * scaleX
+      y = (event.touches[0].clientY - rect.top) * scaleY
+    } else {
+      // Mouse event
+      x = (event.clientX - rect.left) * scaleX
+      y = (event.clientY - rect.top) * scaleY
+    }
 
     contextRef.current.beginPath()
     contextRef.current.moveTo(x, y)
@@ -166,7 +175,10 @@ export default function ImageEditor() {
                   onMouseDown={startErasing}
                   onMouseUp={stopErasing}
                   onMouseMove={erase}
-                  className="border border-gray-300 w-full h-auto"
+                  onTouchStart={startErasing}
+                  onTouchEnd={stopErasing}
+                  onTouchMove={erase}
+                  className="border border-gray-300 w-full h-auto touch-none"
                   style={{ maxWidth: '100%', maxHeight: '600px' }}
                 />
                 <div className="absolute top-2 right-2 space-x-2">
